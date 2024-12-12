@@ -26,7 +26,8 @@ func main() {
 	slices.Sort(leftSlice)
 	slices.Sort(rightSlice)
 
-	fmt.Println(accumulator(leftSlice, rightSlice))
+	fmt.Println("Total difference: ", accumulator(leftSlice, rightSlice))
+	fmt.Println("Similarity Score: ", similarityScore(leftSlice, rightSlice))
 }
 
 func accumulator(left []int, right []int) int {
@@ -65,4 +66,22 @@ func separateInputs(file *os.File) ([]int, []int, error) {
 	}
 
 	return leftValues, rightValues, nil
+}
+
+func similarityScore(left []int, right []int) int {
+	score := 0
+	for _, el := range left {
+		score += el * frequency(el, right)
+	}
+	return score
+}
+
+func frequency(el int, arr []int) int {
+	freq := 0
+	for i := 0; i < len(arr); i++ {
+		if arr[i] == el {
+			freq++
+		}
+	}
+	return freq
 }
