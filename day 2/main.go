@@ -36,7 +36,7 @@ func isSafe(levels []int) bool {
 		return true
 	}
 
-	increasing := levels[0] < levels[1]
+	levels, increasing := unsafeDampener(levels)
 	for i := 0; i < len(levels)-1; i++ {
 		adjacencyDiff := math.Abs(float64(levels[i] - levels[i+1]))
 		if adjacencyDiff < 1 || adjacencyDiff > 3 {
@@ -47,6 +47,17 @@ func isSafe(levels []int) bool {
 		}
 	}
 	return true
+}
+
+func unsafeDampener(levels []int) ([]int, bool) {
+	increasing := levels[0] < levels[1]
+	for i := 0; i < len(levels)-1; i++ {
+		if (increasing && levels[i] >= levels[i+1]) || (!increasing && levels[i] <= levels[i+1]) {
+			levels = append(levels[:i], levels[i+1:]...)
+			break
+		}
+	}
+	return levels, increasing
 }
 
 func separateInputs(filePath string) ([][]int, error) {
