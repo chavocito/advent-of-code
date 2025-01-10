@@ -2,26 +2,47 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"math"
+	"strconv"
 	"strings"
 )
 
 //go:embed input.txt
 var input string
 
-func generateArrayFromInput() [][]int {
+func generateArrayFromInput() ([][]int, error) {
 	var finalArr [][]int
-	splitStr := strings.Split(input, "\n")
-	for _, coord := range splitStr {
-		append(finalArr, make([]int, strings.Split(coord, " ")))
+	lines := strings.Split(input, "\n")
+
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+		pointsAsStrings := strings.Split(strings.TrimSpace(line), " ")
+		var pointsArr []int
+		for _, pointStr := range pointsAsStrings {
+			if pointStr == "" {
+				continue
+			}
+			ints, err := strconv.Atoi(strings.TrimSpace(pointStr))
+			if err != nil {
+				return nil, fmt.Errorf("invalid input: %w", err)
+			}
+			pointsArr = append(pointsArr, ints)
+		}
+		finalArr = append(finalArr, pointsArr)
 	}
-	return splitStr
+	return finalArr, nil
 }
 
 func main() {
-	generateArrayFromInput()
-	//count := countSafePaths(input)
-	//fmt.Println("Number of safe paths:", count)
+	fromInput, err := generateArrayFromInput()
+	if err != nil {
+		return
+	}
+	count := countSafePaths(fromInput)
+	fmt.Println("Number of safe paths:", count)
 }
 
 func countSafePaths(array [][]int) int {
@@ -53,20 +74,28 @@ func isSafe(levels []int) bool {
 }
 
 func safePostDampening(levels []int) bool {
-	increasing := levels[0] < levels[1]
+	if len(levels) < 2 {
+		return false
+	}
+
 	if isSafe(levels) {
 		return true
 	}
 
+	increasing := levels[0] < levels[1]
 	for i := 0; i < len(levels)-1; i++ {
 		adjacencyDiff := math.Abs(float64(levels[i] - levels[i+1]))
-		if adjacencyDiff > 3 {
-			//fmt.Println("Removing", append(levels[:i+1], levels[i+2:]...))
-			return isSafe(append(levels[:i+1], levels[i+2:]...))
+		//check for first instance of constraint violation
+		if adjacencyDiff < 1 || adjacencyDiff > 3 {
+			levels = append(levels[:i], levels[i+1:]...)
+			//
+			break
 		}
 		if (increasing && levels[i] >= levels[i+1]) || (!increasing && levels[i] <= levels[i+1]) {
-			return isSafe(append(levels[:i], levels[i+1:]...))
+			levels = append(levels[:i], levels[i+1:]...)
+			//return isSafe(levels)
+			break
 		}
 	}
-	return false
+	return isSafe(levels)
 }
