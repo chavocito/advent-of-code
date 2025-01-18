@@ -2,20 +2,31 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
 //go:embed input.txt
-var input string
+var aocInput string
 
-func getMuls(inp string) {
+func accumulateMuls(inp string) int {
+	count := 0
 	pattern := regexp.MustCompile("(mul\\(\\d+,\\d+\\))")
 	matches := pattern.FindAll([]byte(inp), -1)
 	for _, match := range matches {
-		matchStr := string(match)
+		intArr, err := getInputIntegers(string(match))
+		if err != nil {
+			fmt.Println("Error getting integers from input:", err)
+			continue
+		}
+		if len(intArr) == 0 {
+			continue
+		}
+		count += executeMul(intArr)
 	}
+	return count
 }
 
 func getInputIntegers(input string) ([]int, error) {
@@ -33,14 +44,11 @@ func getInputIntegers(input string) ([]int, error) {
 	return outputArr, nil
 }
 
-func execMul(input string) int {
-	x, err := strconv.Atoi(input)
-	if err != nil {
-		return 0
-	}
-	return x
+func executeMul(intInput []int) int {
+	return intInput[0] * intInput[1]
 }
 
 func main() {
-	getMuls(input)
+	count := accumulateMuls(aocInput)
+	fmt.Println("Number of muls:", count)
 }
