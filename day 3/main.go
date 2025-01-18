@@ -2,7 +2,7 @@ package main
 
 import (
 	_ "embed"
-	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -10,32 +10,37 @@ import (
 //go:embed input.txt
 var input string
 
-func getCalculablesFromInput() [][]string {
-	var inputPairs [][]string
-	result := strings.Split(input, "mul(")
-	for _, r := range result {
-		insideSplit := strings.Split(r, ",")
-		if len(insideSplit) == 2 {
-			secondEl := strings.Split(insideSplit[1], ")")
-			inputPairs = append(inputPairs, []string{insideSplit[0], secondEl[0]})
-		}
+func getMuls(inp string) {
+	pattern := regexp.MustCompile("(mul\\(\\d+,\\d+\\))")
+	matches := pattern.FindAll([]byte(inp), -1)
+	for _, match := range matches {
+		matchStr := string(match)
 	}
-	return inputPairs
+}
+
+func getInputIntegers(input string) ([]int, error) {
+	var outputArr []int
+	input = strings.TrimPrefix(input, "mul(")
+	input = strings.TrimSuffix(input, ")")
+	arrStr := strings.Split(input, ",")
+	for _, str := range arrStr {
+		cleanInput, err := strconv.Atoi(str)
+		if err != nil {
+			return nil, err
+		}
+		outputArr = append(outputArr, cleanInput)
+	}
+	return outputArr, nil
+}
+
+func execMul(input string) int {
+	x, err := strconv.Atoi(input)
+	if err != nil {
+		return 0
+	}
+	return x
 }
 
 func main() {
-	var count int = 0
-	inputPairs := getCalculablesFromInput()
-	for _, pair := range inputPairs {
-		x, err := strconv.Atoi(pair[0])
-		y, err := strconv.Atoi(pair[1])
-
-		if err != nil {
-			fmt.Println("Error converting string to int:", err)
-			continue
-		}
-		mul := x * y
-		count += mul
-	}
-	fmt.Println(count)
+	getMuls(input)
 }
